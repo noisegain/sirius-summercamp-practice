@@ -13,17 +13,22 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.noisegain.siriuspractice.domain.model.Trip
 import com.noisegain.siriuspractice.ui.model.TripsViewState
 import com.noisegain.siriuspractice.ui.theme.Blue200
+import com.noisegain.siriuspractice.ui.theme.Blue700
+import com.noisegain.siriuspractice.ui.theme.Blue900
 import com.noisegain.siriuspractice.ui.theme.Typography
 import java.text.SimpleDateFormat
 import java.util.*
@@ -72,33 +77,35 @@ fun Trip(trip: Trip) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(verticalArrangement = Arrangement.Bottom) {
-                    Text("от ${trip.startLocation}", style = Typography.body2)
-                    Text("до ${trip.endLocation}", style = Typography.body2)
+                    Text("от ${trip.startLocation}", style = Typography.body1)
+                    Text("до ${trip.endLocation}", style = Typography.body1)
                 }
-                Column(verticalArrangement = Arrangement.Center) {
+                Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("старт в", style = Typography.body2)
                     Text(
                         SimpleDateFormat("HH:mm").format(trip.departure),
                         style = Typography.h2,
-                        color = Blue200
+                        color = Blue900
                     )
                 }
             }
-
-            LeftRightText("Свободных мест", trip.placesAvailable.toString())
+            Spacer(modifier = Modifier.height(8.dp))
             Button(modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Blue200),
+                .height(32.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Blue900),
                 onClick = {
-                println("Присоединяюсь")
-            }) {
+                    println("Присоединяюсь")
+                }) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize(),
                     Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Присоединиться")
+                    Spacer(Modifier.fillMaxWidth(0.2f))
+                    Text("Присоединиться", fontSize = 12.sp, color = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
                     ParticipantsRow {
                         var offset = 0
                         trip.passengers.forEachIndexed { i, url ->
@@ -107,9 +114,9 @@ fun Trip(trip: Trip) {
                                 model = url, contentDescription = "userPhoto",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(16.dp)
                                     .clip(CircleShape)
-                                    .border(2.dp, Blue200, CircleShape)
+                                    .border(2.dp, Blue900, CircleShape)
                                     //.offset(offset.dp, 0.dp)
                                     .zIndex(5 - i.toFloat())
                                 //.rightPhoto(i.toFloat())
@@ -120,6 +127,14 @@ fun Trip(trip: Trip) {
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "${trip.placesAvailable} мест свободно",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                color = Color.LightGray
+            )
         }
     }
 }
