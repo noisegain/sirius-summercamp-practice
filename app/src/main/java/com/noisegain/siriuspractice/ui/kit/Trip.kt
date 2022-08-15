@@ -6,19 +6,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.Divider
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.noisegain.siriuspractice.domain.model.Trip
 import com.noisegain.siriuspractice.ui.model.TripsViewState
@@ -28,31 +29,94 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
+fun ParticipantsRow(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Layout(
+        modifier = modifier,
+        content = content
+    ) { measurables, constraints ->
+        // Don't constrain child views further, measure them with given constraints
+        // List of measured children
+        val placeables = measurables.map { measurable ->
+            // Measure each children
+            measurable.measure(constraints)
+        }
+
+        // Set the size of the layout as big as it can
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            // Track the y co-ord we have placed children up to
+            var xPosition = 0
+
+            // Place children in the parent layout
+            placeables.forEach { placeable ->
+                // Position item on the screen
+                placeable.placeRelative(x = xPosition, y = 0)
+
+                // Record the y co-ord placed up to
+                xPosition += placeable.width / 3 * 2
+            }
+        }
+    }
+}
+
+@Composable
 fun Trip(trip: Trip) {
     Row(Modifier.padding(16.dp)) {
         Column {
-            Text("Поездка ${trip.id}", style = Typography.h2)
-            LeftRightText("Старт", trip.startLocation)
-            LeftRightText("Назначение", trip.endLocation)
-            LeftRightText("Свободных мест", trip.placesAvailable.toString())
-            LeftRightText("Отправление", SimpleDateFormat("HH:mm").format(trip.departure))
+            Text("Поездка ${trip.id}", style = Typography.h3)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth(),
                 Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Пассажиры", style = Typography.body1, textAlign = TextAlign.Left)
-                Row {
-                    trip.passengers.forEach {
-                        Spacer(modifier = Modifier.size(4.dp))
-                        AsyncImage(
-                            model = it, contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .border(2.dp, Blue200, CircleShape)
-                        )
+                Column(verticalArrangement = Arrangement.Bottom) {
+                    Text("от ${trip.startLocation}", style = Typography.body2)
+                    Text("до ${trip.endLocation}", style = Typography.body2)
+                }
+                Column(verticalArrangement = Arrangement.Center) {
+                    Text("старт в", style = Typography.body2)
+                    Text(
+                        SimpleDateFormat("HH:mm").format(trip.departure),
+                        style = Typography.h2,
+                        color = Blue200
+                    )
+                }
+            }
+
+            LeftRightText("Свободных мест", trip.placesAvailable.toString())
+            Button(modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Blue200),
+                onClick = {
+                println("Присоединяюсь")
+            }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Присоединиться")
+                    ParticipantsRow {
+                        var offset = 0
+                        trip.passengers.forEachIndexed { i, url ->
+                            //Spacer(modifier = Modifier.size(4.dp))
+                            AsyncImage(
+                                model = url, contentDescription = "userPhoto",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Blue200, CircleShape)
+                                    //.offset(offset.dp, 0.dp)
+                                    .zIndex(5 - i.toFloat())
+                                //.rightPhoto(i.toFloat())
+                            )
+                            println(offset)
+                            offset += 26
+                        }
                     }
                 }
             }
@@ -75,7 +139,7 @@ fun LeftRightText(text1: String, text2: String) {
 @Preview(showBackground = true)
 @Composable
 fun ShowTrip() {
-    Trip(Trip("aboba", "sirius", "mama", 3, Date(123123), listOf("aboba")))
+    Trip(Trip("aboba", "sirius", "mama", 3, Date(123123), listOf("aboba", "baba")))
 }
 
 @Composable
